@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
-import { OrbitBackground } from "@/components/OrbitBackground";
 import { ArrowRight, Compass, Users, Sparkles, MessageCircle, Target, Rocket } from "lucide-react";
+import heroImage from "@/assets/hero-orbit.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,7 +31,13 @@ function Landing() {
 
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <OrbitBackground />
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background" aria-hidden="true" />
         <div className="relative mx-auto flex min-h-[88vh] max-w-5xl flex-col items-center justify-center px-6 py-24 text-center">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
