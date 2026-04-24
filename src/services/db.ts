@@ -34,7 +34,7 @@ export async function getAll<T extends PublicTable>(
     select = "*",
   } = opts;
 
-  let q = supabase.from(table).select(select, { count: "exact" });
+  let q = (supabase.from(table) as any).select(select, { count: "exact" });
 
   for (const [k, v] of Object.entries(filters)) {
     if (v !== undefined && v !== null) q = q.eq(k, v as never);
@@ -57,10 +57,9 @@ export async function getById<T extends PublicTable>(
   id: string,
   select = "*"
 ) {
-  const { data, error } = await supabase
-    .from(table)
+  const { data, error } = await (supabase.from(table) as any)
     .select(select)
-    .eq("id" as never, id as never)
+    .eq("id", id)
     .maybeSingle();
   if (error) {
     log(`getById:${table}:error`, error);
