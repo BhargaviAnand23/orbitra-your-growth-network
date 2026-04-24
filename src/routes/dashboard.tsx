@@ -181,7 +181,7 @@ function Dashboard() {
                         {op.location && (
                           <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{op.location}</span>
                         )}
-                        {op.profiles?.full_name && <span>by {op.profiles.full_name}</span>}
+                        {isMine && <Badge variant="outline" className="text-[10px]">You</Badge>}
                         {op.tags?.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {op.tags.slice(0,4).map((t) => <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>)}
