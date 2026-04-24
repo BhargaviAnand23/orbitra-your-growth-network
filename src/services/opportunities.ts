@@ -20,7 +20,7 @@ export async function listOpportunities({
 }: ListOpportunitiesOpts = {}) {
   let q = supabase
     .from("opportunities")
-    .select("*, profiles:created_by(full_name, avatar_url)", { count: "exact" })
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false });
 
   if (type && type !== "all") q = q.eq("type", type);

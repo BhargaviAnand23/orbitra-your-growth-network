@@ -66,7 +66,7 @@ function Dashboard() {
         listOpportunities({ search, type, page, pageSize: PAGE_SIZE }),
         listSavedIds(user.id),
       ]);
-      setItems(items as OppWithProfile[]);
+      setItems(items as unknown as OppWithProfile[]);
       setCount(count);
       setSaved(savedSet);
     } catch (err) {
