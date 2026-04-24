@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { OrbitBackground } from "@/components/OrbitBackground";
-import { Orbit, X } from "lucide-react";
+import { Orbit } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 type AuthMode = "login" | "signup";
 
@@ -26,20 +27,32 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { mode } = Route.useSearch();
   const navigate = useNavigate();
-  const [skills, setSkills] = useState<string[]>(["React"]);
-  const [skillInput, setSkillInput] = useState("");
+  const { signIn, signUp } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const setMode = (m: AuthMode) => navigate({ to: "/auth", search: { mode: m } });
 
-  const addSkill = () => {
-    const v = skillInput.trim();
-    if (v && !skills.includes(v)) setSkills([...skills, v]);
-    setSkillInput("");
-  };
-
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    navigate({ to: "/dashboard" });
+    setSubmitting(true);
+    try {
+      if (mode === "signup") {
+        await signUp(email, password, fullName);
+        toast.success("Account created — welcome to Orbitra!");
+      } else {
+        await signIn(email, password);
+        toast.success("Welcome back");
+      }
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      toast.error(msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -57,7 +70,6 @@ function AuthPage() {
         </Link>
 
         <div className="rounded-3xl border border-border bg-card-glass p-8 shadow-elevated">
-          {/* Toggle */}
           <div className="mb-8 grid grid-cols-2 gap-1 rounded-full border border-border bg-background/40 p-1">
             <button
               onClick={() => setMode("login")}
@@ -96,77 +108,26 @@ function AuthPage() {
                 {mode === "signup" && (
                   <div>
                     <Label htmlFor="name">Full name</Label>
-                    <Input id="name" placeholder="Alex Chen" className="mt-1.5" required />
+                    <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Alex Chen" className="mt-1.5" required />
                   </div>
                 )}
 
                 <div>
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="you@orbitra.app" className="mt-1.5" required />
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@orbitra.app" className="mt-1.5" required />
                 </div>
 
                 <div>
                   <Label htmlFor="password">Password</Label>
-                  <Input id="password" type="password" placeholder="••••••••" className="mt-1.5" required />
+                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="mt-1.5" required minLength={6} />
                 </div>
-
-                {mode === "signup" && (
-                  <>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor="age">Age</Label>
-                        <Input id="age" type="number" min={12} max={25} placeholder="19" className="mt-1.5" />
-                      </div>
-                      <div>
-                        <Label htmlFor="location">Location</Label>
-                        <Input id="location" placeholder="Berlin" className="mt-1.5" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="skills">Skills</Label>
-                      <div className="mt-1.5 flex gap-2">
-                        <Input
-                          id="skills"
-                          value={skillInput}
-                          onChange={(e) => setSkillInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              addSkill();
-                            }
-                          }}
-                          placeholder="Add a skill and press Enter"
-                        />
-                        <Button type="button" variant="secondary" onClick={addSkill}>
-                          Add
-                        </Button>
-                      </div>
-                      {skills.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {skills.map((s) => (
-                            <Badge
-                              key={s}
-                              variant="secondary"
-                              className="gap-1 bg-primary/15 text-foreground hover:bg-primary/25"
-                            >
-                              {s}
-                              <button type="button" onClick={() => setSkills(skills.filter((x) => x !== s))}>
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
 
                 <Button
                   type="submit"
+                  disabled={submitting}
                   className="mt-2 h-11 w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow"
                 >
-                  {mode === "login" ? "Log in" : "Create account"}
+                  {submitting ? "Please wait…" : mode === "login" ? "Log in" : "Create account"}
                 </Button>
               </form>
             </motion.div>
